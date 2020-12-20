@@ -99,6 +99,21 @@ func main(){
 		})
 	})
 
+	app.Delete("api/delete/:id", func(c *fiber.Ctx){
+		id := c.Params("id")
+		qr := fmt.Sprintf(`Delete from users where "UserID"='%v'`, id)
+		
+		fmt.Println(qr)
+		err := database.DoCrudOperationWithTargetQuery(qr)
+		if err != nil{
+			utils.MakeErrorRespondIfAnyError(err,c)
+			return
+		}
+		c.Status(200).JSON(&fiber.Map{
+			"status": "success",
+		})
+	})
+
 
 	app.Listen(3000)
 }
