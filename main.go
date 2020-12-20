@@ -68,6 +68,38 @@ func main(){
 	})
 
 
+	app.Get("api/select", func(c *fiber.Ctx){
+		db, err := database.OpenPgSQL()
+		if err != nil{
+			fmt.Println(err)
+		}
+		qr := `select * from users`
+		selects,err := db.Query(qr)
+		_ = selects
+
+		var model []models.UserModel = make([]models.UserModel, 0)
+		var modelDb models.UserModelDb
+
+		for selects.Next() {
+
+			// This scan function -> aligned weirdly because it has to be ordered as the same as the table alignment in order of postgresql
+			err := selects.Scan(&modelDb.Age,&modelDb.Status,&modelDb.UserID,&modelDb.FirstName,&modelDb.LastName,&modelDb.CreatedAt)
+			if err != nil {
+				fmt.Println(err)
+			}
+			modelSet := models.UserModel{modelDb.UserID.String,
+				modelDb.FirstName.String, modelDb.LastName.String, int(modelDb.Age.Int32), int(modelDb.Status.Int32), modelDb.CreatedAt.String}
+			
+			model = append(model, modelSet)
+		}
+
+		c.Status(200).JSON(&fiber.Map{
+			"status": "success",
+			"data": model,
+		})
+	})
+
+
 	app.Listen(3000)
 }
 
