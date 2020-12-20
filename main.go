@@ -40,6 +40,33 @@ func main(){
 
 	})
 
+	app.Post("api/update", func(c *fiber.Ctx){
+		//req := 
+
+		req := new(models.UserModelUpdate)
+		err := utils.DoesReqBodyCanParsed(req,c)
+		if err != nil{
+			return
+		}
+
+		qr := fmt.Sprintf(`UPDATE users ` +
+			`SET "FirstName"='%v', "LastName"='%v', "Age"=%d, "Status"=%d, "CreatedAt"=current_timestamp ` +
+			`WHERE "UserID"='%v'`, req.FirstName, req.LastName, req.Age, req.Status, req.UserID)
+		fmt.Println(qr)
+		err = database.DoCrudOperationWithTargetQuery(qr)
+		if err != nil{
+			utils.MakeErrorRespondIfAnyError(err,c)
+			return
+		}
+
+
+		c.Status(200).JSON(&fiber.Map{
+			"message": "success",
+			"data": req,
+		})
+
+	})
+
 
 	app.Listen(3000)
 }
